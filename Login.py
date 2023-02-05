@@ -1,6 +1,132 @@
-import hashlib
+import getpass
+import os
+import bcrypt
+import re
+import psycopg2 as psycopg2
+
+EMAIL_VALIDATION = "^[\\w -.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
+PASSWORD_VALIDATION = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!#%*?&]{6,20}$"
+NAME_VALIDATION = "^[A-z][a-z]+$"
 
 
+def create_tables():
+    conn = psycopg2.connect(host=os.environ['DATABASE_URL'], database=os.environ['PYTHON_PROJECT_USERNAME'],
+                            password=os.environ['PASSWORD'],
+                            user=os.environ['PYTHON_PROJECT_USERNAME'])
+
+    cursor = conn.cursor()
+    cursor.execute("""CREATE TABLE "user"(
+                        EMAIL VARCHAR(35) NOT NULL PRIMARY KEY,
+                        FIRSTNAME VARCHAR(30) NOT NULL,
+                        LASTNAME VARCHAR(30) NOT NULL,
+                        PASSWORD VARCHAR NOT NULL ,
+                        SALT VARCHAR NOT NULL,
+                        ISADMIN BOOLEAN);
+                    """)
+
+    cursor.execute("""CREATE TABLE PROJECTION(
+                   PROJECTIONID INT UNIQUE PRIMARY KEY,
+                   DATE DATE,
+                   TIME TIME,
+                   MOVIE VARCHAR(50),
+                   TOTALREVENUE DECIMAL(8,2));""")
+
+    cursor.execute("""CREATE TABLE PURCHASEHISTORY(
+                      PURCHASEDAT TIMESTAMP PRIMARY KEY,
+                      PURCHASEDBY VARCHAR(50) REFERENCES "user"(EMAIL),
+                      PROJECTION INT REFERENCES PROJECTION(PROJECTIONID),
+                      PURCHASEDPLACES VARCHAR(200),
+                      TOTAL DECIMAL(8,2));"""
+                   )
+    conn.commit()
+    cursor.close()
+
+
+def validate_registration_input():
+    email = ""
+    pwd = ""
+    fstname = ""
+    lstname = ""
+    print("To cancel the operation, type 'quit'")
+    while not re.match(EMAIL_VALIDATION, email):
+        email = input("Enter email address: ")
+        if email == "quit":
+            return -1
+        if not re.match(EMAIL_VALIDATION, email):
+            print("Error: Invalid email. Try again...")
+    conf_pwd = "2"
+    while pwd != conf_pwd:
+        print("Note: Password must contain:\nAt least 1 digit\nAt least one lowercase character\n"
+              "At least one uppercase character\nAt least one special character\nAt least 8 characters in length")
+        while not re.match(PASSWORD_VALIDATION, pwd):
+            pwd = getpass.getpass("Enter Password: ")
+            if pwd == "quit":
+                return -1
+            if not re.match(PASSWORD_VALIDATION, pwd):
+                print("Password doesn't satisfy requirements in Note. Try again...")
+                pwd = ""
+        while not re.match(PASSWORD_VALIDATION, conf_pwd):
+            conf_pwd = getpass.getpass("Confirm Password: ")
+            if conf_pwd == "quit":
+                return -1
+            if not re.match(PASSWORD_VALIDATION, conf_pwd):
+                print("Password doesn't satisfy requirements in Note. Try again...")
+                pwd = ""
+                conf_pwd = "2"
+                break
+            if pwd != conf_pwd:
+                print("Passwords don't match. Try again...")
+                pwd = ""
+                conf_pwd = "2"
+                break
+    while not re.match(NAME_VALIDATION, fstname):
+        fstname = input("Enter First Name: ")
+        if fstname == "quit":
+            return -1
+        if not re.match(NAME_VALIDATION, fstname):
+            print("Error: Invalid First Name. Please enter only letters...")
+    while not re.match(NAME_VALIDATION, lstname):
+        lstname = input("Enter Last Name: ")
+        if lstname == "quit":
+            return -1
+        if not re.match(NAME_VALIDATION, lstname):
+            print("Error: Invalid Last Name. Please enter only letters...")
+    return email, pwd, fstname, lstname
+
+
+def register():
+    result = validate_registration_input()
+    if result == -1:
+        print("Registration process was canceled...")
+    else:
+        email = result[0]
+        pwd = result[1]
+        fstname = result[2]
+        lstname = result[3]
+        conn = psycopg2.connect(host=os.environ['DATABASE_URL'], database=os.environ['PYTHON_PROJECT_USERNAME'],
+                                password=os.environ['PASSWORD'],
+                                user=os.environ['PYTHON_PROJECT_USERNAME'])
+        cursor = conn.cursor()
+        cursor.execute("""SELECT COUNT(1) FROM "user" WHERE email = %s""", [email])
+        count = cursor.fetchone()
+        if count == (1,):
+            print("A registered user with this email exists...")
+        else:
+            pwd = pwd.encode()
+            salt = bcrypt.gensalt()
+            hashed_pwd = bcrypt.hashpw(pwd, salt)
+            cursor.execute("""
+            INSERT INTO "user"(EMAIL, FIRSTNAME, LASTNAME, PASSWORD, SALT, ISADMIN)
+             VALUES (%s, %s, %s, %s, %s, false)
+            """, [email, fstname, lstname, hashed_pwd, salt])
+            conn.commit()
+            cursor.close()
+            print("Successfully registered...")
+
+
+def login():
+
+"""
 def signup():
     email = input("Enter email address: ")
     pwd = input("Enter password: ")
@@ -43,3 +169,7 @@ def signup():
             break
         else:
             print("Wrong Choice!")
+            """
+
+if __name__ == '__main__':
+    register()
