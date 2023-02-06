@@ -1,3 +1,4 @@
+import base64
 import getpass
 import os
 import bcrypt
@@ -8,19 +9,21 @@ EMAIL_VALIDATION = "^[\\w -.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
 PASSWORD_VALIDATION = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!#%*?&]{6,20}$"
 NAME_VALIDATION = "^[A-z][a-z]+$"
 
-
 def create_tables():
     conn = psycopg2.connect(host=os.environ['DATABASE_URL'], database=os.environ['PYTHON_PROJECT_USERNAME'],
                             password=os.environ['PASSWORD'],
                             user=os.environ['PYTHON_PROJECT_USERNAME'])
 
     cursor = conn.cursor()
+    cursor.execute("""DROP TABLE "user" CASCADE """)
+    cursor.execute("""DROP TABLE PROJECTION CASCADE """)
+    cursor.execute("""DROP TABLE PURCHASEHISTORY CASCADE """)
+
     cursor.execute("""CREATE TABLE "user"(
                         EMAIL VARCHAR(35) NOT NULL PRIMARY KEY,
                         FIRSTNAME VARCHAR(30) NOT NULL,
                         LASTNAME VARCHAR(30) NOT NULL,
                         PASSWORD VARCHAR NOT NULL ,
-                        SALT VARCHAR NOT NULL,
                         ISADMIN BOOLEAN);
                     """)
 
@@ -108,23 +111,62 @@ def register():
                                 user=os.environ['PYTHON_PROJECT_USERNAME'])
         cursor = conn.cursor()
         cursor.execute("""SELECT COUNT(1) FROM "user" WHERE email = %s""", [email])
-        count = cursor.fetchone()
-        if count == (1,):
+        count = cursor.fetchone()[0]
+        if count == 1:
             print("A registered user with this email exists...")
         else:
-            pwd = pwd.encode()
-            salt = bcrypt.gensalt()
-            hashed_pwd = bcrypt.hashpw(pwd, salt)
+            print(pwd)
+            pwd = bytes(pwd, "utf-8")
+            print(pwd)
+            hashed_pwd = bcrypt.hashpw(pwd, bcrypt.gensalt())
+            print(hashed_pwd)
+            print("{0}".format(hashed_pwd))
+            hashed_pwd = str(hashed_pwd)
             cursor.execute("""
-            INSERT INTO "user"(EMAIL, FIRSTNAME, LASTNAME, PASSWORD, SALT, ISADMIN)
-             VALUES (%s, %s, %s, %s, %s, false)
-            """, [email, fstname, lstname, hashed_pwd, salt])
+            INSERT INTO "user"(EMAIL, FIRSTNAME, LASTNAME, PASSWORD, ISADMIN)
+             VALUES (%s, %s, %s, %s, FALSE)
+            """, [email, fstname, lstname, hashed_pwd])
             conn.commit()
             cursor.close()
             print("Successfully registered...")
 
 
 def login():
+    print("To cancel the operation, type 'quit'")
+    email = ""
+    while not re.match(EMAIL_VALIDATION, email):
+        email = input("Enter email address: ")
+        if email == "quit":
+            return -1
+        if not re.match(EMAIL_VALIDATION, email):
+            print("Error: Invalid email. Try again...")
+    pwd = getpass.getpass("Enter Password: ")
+    if pwd == "quit":
+        return -1
+    pwd = bytes(pwd, "utf-8")
+    print(pwd)
+    conn = psycopg2.connect(host=os.environ['DATABASE_URL'], database=os.environ['PYTHON_PROJECT_USERNAME'],
+                            password=os.environ['PASSWORD'],
+                            user=os.environ['PYTHON_PROJECT_USERNAME'])
+    cursor = conn.cursor()
+    cursor.execute("""SELECT COUNT(1) FROM "user" WHERE EMAIL = %s""", [email])
+    count = cursor.fetchone()[0]
+    if count == 0:
+        print("There is no such user...")
+    else:
+        cursor.execute("""SELECT PASSWORD FROM "user" WHERE EMAIL = %s""", [email])
+        user_pwd = cursor.fetchone()[0]
+        user_pwd = user_pwd[2:len(user_pwd)-1]
+        print(user_pwd)
+        user_pwd = bytes(user_pwd, "utf-8")
+        if bcrypt.checkpw(pwd, user_pwd):
+            cursor.execute("""SELECT * FROM "user" WHERE EMAIL = %s""", [email])
+            result = cursor.fetchone()
+            print("Logged in")
+            return result
+        else:
+            print("Incorrect password")
+
 
 """
 def signup():
@@ -172,4 +214,4 @@ def signup():
             """
 
 if __name__ == '__main__':
-    register()
+    login()
