@@ -155,17 +155,17 @@ class Authentication:
             return -1
         pwd = bytes(pwd, "utf-8")
 
-        self.__cursor.execute("""SELECT COUNT(1), * FROM "user" WHERE EMAIL = %s GROUP BY EMAIL""", [email])
+        self.__cursor.execute("""SELECT * FROM "user" WHERE EMAIL = %s GROUP BY EMAIL""", [email])
         result = self.__cursor.fetchone()
-        if result[0] == 0:
+        if not result:
             print("There is no such user...")
         else:
-            user_pwd = result[4]
+            user_pwd = result[3]
             user_pwd = user_pwd[2:len(user_pwd) - 1]
             user_pwd = bytes(user_pwd, "utf-8")
             if bcrypt.checkpw(pwd, user_pwd):
-                print("Logged in")
-                return User(result[1], result[2], result[3], result[4], result[5])
+                print(f"Welcome, {result[1]} {result[2]}")
+                return User(result[0], result[1], result[2], result[3], result[4])
             else:
                 print("Incorrect password")
 
