@@ -12,7 +12,7 @@ if __name__ == '__main__':
         print("------------------Welcome to the Movie Booking System------------------")
         print("Please choose from the following options:")
         print("1.Register (type '-r')\n2.Login (type '-li')\n3.View Current Projections (type '-cp')\n"
-              "4.Exit (type '-e')")
+              "4 View Available Seats (type -as)\n5.Exit (type '-e')")
         command = input("Enter a command: ")
         if command == "-r":
             user = authentication.register()
@@ -37,12 +37,12 @@ if __name__ == '__main__':
                         print("1. Add Projection (type -ap)\n2. Edit ticket price (type -et)\n"
                               "3. Delete projection (type -dp)\n4. Show total revenue (type - tr)\n"
                               "5. View Current Projections (type '-cp')\n6. Buy ticket (type -bt)\n"
-                              "7. Log out (type -lo)")
+                              "7. View Available Seats (type -as)\n8. Log out (type -lo)")
                         command = input("Enter a command: ")
                     else:
                         print("----------------MENU----------------")
                         print("1. View Current Projections (type '-cp')\n2. Buy ticket (type -bt)\n"
-                              "3. Log out (type -lo)")
+                              "3. Log out (type -lo)\n4. View Available Seats (type -as)")
                         command = input("Enter a command: ")
                     if user.get_isAdmin() and command == '-ap':
                         if not projection.create_projection():
@@ -60,6 +60,9 @@ if __name__ == '__main__':
                     elif command == '-bt':
                         if not projection.buy_ticket():
                             command = ""
+                    elif command == '-as':
+                        if not projection.view_available_seats():
+                            command = ""
                     elif command == '-lo':
                         print("Logging out")
                     else:
@@ -67,6 +70,9 @@ if __name__ == '__main__':
                         command = ""
         elif command == '-cp':
             projection.view_movie_details()
+        elif command == '-as':
+            if not projection.view_available_seats():
+                command = ""
         elif command == '-e':
             print("Goodbye :)")
         else:

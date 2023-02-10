@@ -293,6 +293,31 @@ class Projection:
                 print("Non-valid reply. Type 'Y/y' or 'N/n")
                 reply = ""
 
+    def view_available_seats(self):
+        print("----------------VIEW  AVAILABLE SEATS----------------")
+        self.view_projections()
+        total_projections = len(self.__projections_to_list_user())
+        print("To cancel the operation, type 'quit'")
+        chosen_movie = ""
+        while chosen_movie == "":
+            chosen_movie = input("Enter the № of the desired film: \n")
+            if chosen_movie == "quit":
+                print("Process has been canceled...")
+                return False
+            elif chosen_movie.isnumeric() is False:
+                print("Error: Non-numeric input. Try again...")
+                chosen_movie = ""
+            elif 1 < int(chosen_movie) and int(chosen_movie) > total_projections:
+                print("Error: Index out of range. Try again...")
+                chosen_movie = ""
+
+        self.__cursor.execute(f"SELECT * FROM PROJECTION LIMIT 1 OFFSET {int(chosen_movie) - 1}")
+        result = self.__cursor.fetchone()
+        hall = MovieHall()
+        hall.string_to_hall(result[5])
+        hall.print_hall()
+        return True
+
 if __name__ == '__main__':
     projection = Projection()
-    projection.buy_ticket()
+    projection.view_available_seats()
