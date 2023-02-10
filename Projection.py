@@ -35,7 +35,7 @@ class Projection:
             chosen_movie = input("Enter the corresponding number of the movie: ")
             if chosen_movie == "quit":
                 print("Process has been canceled...")
-                return -1
+                return
             elif int(chosen_movie) < 1 or int(chosen_movie) > 20:
                 print("Error: Chosen number is out of range. Try again...")
             elif chosen_movie.isnumeric() is False:
@@ -48,7 +48,7 @@ class Projection:
             desired_date = input(""""Enter the desired date in format YYYY-MM-DD: """)
             if desired_date == "quit":
                 print("Process has been canceled...")
-                return -1
+                return
             if not re.match(self.DATE_VALIDATION, desired_date):
                 print("Invalid date. Try again...")
                 desired_date = ""
@@ -56,7 +56,7 @@ class Projection:
         while desired_time == "":
             desired_time = input("Enter the desired time in the format HH:MM: ")
             if desired_time == "quit":
-                return -1
+                return
             if not re.match(self.TIME_VALIDATION, desired_time):
                 print("Error: Invalid time")
                 desired_time = ""
@@ -72,7 +72,7 @@ class Projection:
                 all_halls.remove(hall[0])
         if len(all_halls) == 0:
             print("All halls are occupied...")
-            return -1
+            return
         else:
             print("Available halls for this date and time:")
             for hall in all_halls:
@@ -82,7 +82,7 @@ class Projection:
             hall_number = input("Enter the corresponding number of the hall: ")
             if hall_number == "quit":
                 print("Process has been canceled...")
-                return -1
+                return
             elif int(hall_number) not in all_halls:
                 print("Error: Chosen number is out of range. Try again...")
                 hall_number = 0
@@ -111,7 +111,7 @@ class Projection:
             ticket_price = input("Enter the ticket price: ")
             if ticket_price == "quit":
                 print("Process has been canceled...")
-                return -1
+                return
             if not re.match(self.PRICE_VALIDATION, ticket_price):
                 print("Error: Invalid price format. Try again...")
                 ticket_price = 0.00
@@ -122,8 +122,8 @@ class Projection:
         print("----------------ADD PROJECTION----------------")
         print("To cancel the operation, type 'quit'")
         projection = self.__validate_projection_input()
-        if projection == -1:
-            return
+        if projection is None:
+            return False
         else:
             self.__cursor.execute("""INSERT INTO PROJECTION(PROJECTION_DATE, PROJECTION_TIME, HALL_ID, MOVIE,
             HALL_REPRESENTATION, TAKEN_SEATS, TICKET_PRICE, TOTAL_REVENUE) VALUES 
@@ -131,6 +131,7 @@ class Projection:
                                                   projection[4], 0, projection[5], 0.00])
             self.__conn.commit()
             print("Successfully added projection...")
+            return True
 
     def edit_projection_ticket_price(self):
         self.__view_projections_admin()
@@ -141,6 +142,7 @@ class Projection:
             projection_id = input("Enter the projection id of the desired film: ")
             if projection_id == "quit":
                 print("Process has been canceled...")
+                return False
             elif projection_id.isnumeric() is False:
                 print("Error:Non-numeric input. Try again...")
             elif int(projection_id) not in ids:
@@ -151,7 +153,7 @@ class Projection:
             new_price = input("Enter the new ticket price: ")
             if new_price == "quit":
                 print("Process has been canceled...")
-                return
+                return False
             if not re.match(self.PRICE_VALIDATION, new_price):
                 print("Error: Invalid input. Try again...")
                 new_price = ""
@@ -159,6 +161,7 @@ class Projection:
                               [new_price, projection_id])
         self.__conn.commit()
         print("Successfully edited projection")
+        return True
 
     def __projection_ids_to_list(self):
         self.__cursor.execute("""SELECT PROJECTION_ID FROM PROJECTION""")
@@ -169,7 +172,8 @@ class Projection:
         return projection_ids
 
     def __projections_to_list_admin(self):
-        self.__cursor.execute("""SELECT * FROM PROJECTION""")
+        self.__cursor.execute("""SELECT PROJECTION_ID, PROJECTION_DATE, PROJECTION_TIME,
+         HALL_ID, MOVIE, TAKEN_SEATS, TICKET_PRICE, TOTAL_REVENUE FROM PROJECTION""")
         result = self.__cursor.fetchall()
         projections = []
         for _projection in result:
@@ -187,7 +191,7 @@ class Projection:
 
     def __view_projections_admin(self):
         projections = self.__projections_to_list_admin()
-        print(tabulate(projections, headers=["ID", "DATE", "TIME", "HALL ID", "MOVIE", "HALL",
+        print(tabulate(projections, headers=["ID", "DATE", "TIME", "HALL ID", "MOVIE",
                                              "TAKEN SEATS", "TICKET PRICE", "TOTAL"]))
 
     def view_projections(self):
@@ -204,6 +208,7 @@ class Projection:
             projection_id = input("Enter the projection id of the desired movie: ")
             if projection_id == "quit":
                 print("Process was cancelled...")
+                return False
             elif projection_id.isnumeric() is False:
                 print("Error:Non-numeric input. Try again...")
             elif int(projection_id) not in ids:
@@ -212,6 +217,7 @@ class Projection:
         self.__cursor.execute("""DELETE FROM PROJECTION WHERE PROJECTION_ID = %s""", projection_id)
         self.__conn.commit()
         print("Successfully deleted projection")
+        return True
 
     def show_total_revenue(self):
         self.__cursor.execute("""SELECT PROJECTION_DATE, PROJECTION_TIME, MOVIE, TOTAL_REVENUE FROM PROJECTION""")
@@ -250,7 +256,7 @@ class Projection:
         while chosen_movie == "":
             chosen_movie = input("Enter the № of the desired film: ")
             if chosen_movie == "quit":
-                return
+                return False
             elif chosen_movie.isnumeric() is False:
                 print("Error: Non-numeric input. Try again...")
                 chosen_movie = ""
@@ -262,13 +268,15 @@ class Projection:
         result = self.__cursor.fetchone()
         hall = MovieHall()
         hall.string_to_hall(result[5])
-        hall.buy_ticket()
+        if not hall.buy_ticket():
+            return False
         string_hall = hall.hall_to_string()
         taken_seats = int(result[6]) + 1
         total_revenue = float(result[8]) + float(result[7])
         self.__cursor.execute("""UPDATE PROJECTION SET HALL_REPRESENTATION = %s, TAKEN_SEATS = %s, TOTAL_REVENUE = %s
         WHERE PROJECTION_ID = %s """, [string_hall, taken_seats, total_revenue, result[0]])
         self.__conn.commit()
+        return True
 
     def view_movie_details(self):
         self.view_projections()

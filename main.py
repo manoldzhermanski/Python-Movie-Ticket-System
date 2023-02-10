@@ -16,16 +16,18 @@ if __name__ == '__main__':
         command = input("Enter a command: ")
         if command == "-r":
             user = authentication.register()
-            if user == -1:
-                pass
+            if user is None:
+                command = ""
+                continue
             else:
                 command = '-li'
                 is_logged_in = True
         if command == '-li':
             if not is_logged_in:
                 user = authentication.login()
-                if user == -1:
+                if user is None:
                     command = ""
+                    continue
                 else:
                     is_logged_in = True
             if is_logged_in:
@@ -43,17 +45,21 @@ if __name__ == '__main__':
                               "3. Log out (type -lo)")
                         command = input("Enter a command: ")
                     if user.get_isAdmin() and command == '-ap':
-                        projection.create_projection()
-                    if user.get_isAdmin() and command == '-et':
-                        projection.edit_projection_ticket_price()
-                    if user.get_isAdmin() and command == '-dp':
-                        projection.delete_projection()
-                    if user.get_isAdmin() and command == '-tr':
+                        if not projection.create_projection():
+                            command = ""
+                    elif user.get_isAdmin() and command == '-et':
+                        if not projection.edit_projection_ticket_price():
+                            command = ""
+                    elif user.get_isAdmin() and command == '-dp':
+                        if not projection.delete_projection():
+                            command = ""
+                    elif user.get_isAdmin() and command == '-tr':
                         projection.show_total_revenue()
-                    if command == '-cp':
+                    elif command == '-cp':
                         projection.view_movie_details()
-                    if command == '-bt':
-                        projection.buy_ticket()
+                    elif command == '-bt':
+                        if not projection.buy_ticket():
+                            command = ""
                     elif command == '-lo':
                         print("Logging out")
                     else:

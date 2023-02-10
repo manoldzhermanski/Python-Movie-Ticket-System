@@ -27,7 +27,7 @@ class MovieHall:
         while row == "":
             row = input(f"Enter a row number (between 1 and {self.__rows}): ")
             if row == "quit":
-                return
+                return False, False
             elif row.isnumeric() is False:
                 print("Error: Non-numeric input. Try again...")
                 row = ""
@@ -37,7 +37,7 @@ class MovieHall:
         while seat == "":
             seat = input(f"Enter a seat number (between 1 and {self.__seats}): ")
             if seat == "quit":
-                return
+                return False, False
             elif seat.isnumeric() is False:
                 print("Error: Non-numeric input. Try again...")
                 seat = ""
@@ -61,6 +61,9 @@ class MovieHall:
         print("To cancel the operation, type 'quit'")
         self.print_hall()
         row, seat = self.__validate_hall_input()
+        if row is False or seat is False:
+            print("Process has been canceled...")
+            return False
         if self.__hall[row - 1][seat - 1] == 1:
             print("This seat is already booked.")
         else:

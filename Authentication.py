@@ -71,7 +71,7 @@ class Authentication:
         while not re.match(self.EMAIL_VALIDATION, email):
             email = input("Enter email address: ")
             if email == "quit":
-                return -1
+                return
             if not re.match(self.EMAIL_VALIDATION, email):
                 print("Error: Invalid email. Try again...")
         conf_pwd = "2"
@@ -81,14 +81,14 @@ class Authentication:
             while not re.match(self.PASSWORD_VALIDATION, pwd):
                 pwd = getpass.getpass("Enter Password: ")
                 if pwd == "quit":
-                    return -1
+                    return
                 if not re.match(self.PASSWORD_VALIDATION, pwd):
                     print("Password doesn't satisfy requirements in Note. Try again...")
                     pwd = ""
             while not re.match(self.PASSWORD_VALIDATION, conf_pwd):
                 conf_pwd = getpass.getpass("Confirm Password: ")
                 if conf_pwd == "quit":
-                    return -1
+                    return
                 if not re.match(self.PASSWORD_VALIDATION, conf_pwd):
                     print("Password doesn't satisfy requirements in Note. Try again...")
                     pwd = ""
@@ -102,20 +102,20 @@ class Authentication:
         while not re.match(self.NAME_VALIDATION, first_name):
             first_name = input("Enter First Name: ")
             if first_name == "quit":
-                return -1
+                return
             if not re.match(self.NAME_VALIDATION, first_name):
                 print("Error: Invalid First Name. Please enter only letters (2 minimum)...")
         while not re.match(self.NAME_VALIDATION, last_name):
             last_name = input("Enter Last Name: ")
             if last_name == "quit":
-                return -1
+                return
             if not re.match(self.NAME_VALIDATION, last_name):
                 print("Error: Invalid Last Name. Please enter only letters (2 minimum)...")
         return User(email, pwd, first_name, last_name, False)
 
     def register(self):
         user = self.__validate_registration_input()
-        if user == -1:
+        if user is None:
             print("Registration was canceled...")
         else:
             email = user.get_email()
@@ -147,12 +147,12 @@ class Authentication:
         while not re.match(self.EMAIL_VALIDATION, email):
             email = input("Enter email address: ")
             if email == "quit":
-                return -1
+                return
             if not re.match(self.EMAIL_VALIDATION, email):
                 print("Error: Invalid email. Try again...")
         pwd = getpass.getpass("Enter Password: ")
         if pwd == "quit":
-            return -1
+            return
         pwd = bytes(pwd, "utf-8")
 
         self.__cursor.execute("""SELECT * FROM "user" WHERE EMAIL = %s GROUP BY EMAIL""", [email])
