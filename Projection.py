@@ -133,7 +133,7 @@ class Projection:
             print("Successfully added projection...")
             return True
 
-    def edit_projection_ticket_price(self):
+    def edit_projection_ticket_price(self) -> bool:
         self.__view_projections_admin()
         print("To cancel the operation, type 'quit'")
         ids = self.__projection_ids_to_list()
@@ -163,7 +163,7 @@ class Projection:
         print("Successfully edited projection")
         return True
 
-    def __projection_ids_to_list(self):
+    def __projection_ids_to_list(self) -> list:
         self.__cursor.execute("""SELECT PROJECTION_ID FROM PROJECTION""")
         result = self.__cursor.fetchall()
         projection_ids = []
@@ -171,7 +171,7 @@ class Projection:
             projection_ids.append(ids[0])
         return projection_ids
 
-    def __projections_to_list_admin(self):
+    def __projections_to_list_admin(self) -> list:
         self.__cursor.execute("""SELECT PROJECTION_ID, PROJECTION_DATE, PROJECTION_TIME,
          HALL_ID, MOVIE, TAKEN_SEATS, TICKET_PRICE, TOTAL_REVENUE FROM PROJECTION""")
         result = self.__cursor.fetchall()
@@ -180,7 +180,7 @@ class Projection:
             projections.append(map(str, _projection))
         return projections
 
-    def __projections_to_list_user(self):
+    def __projections_to_list_user(self) -> list:
         self.__cursor.execute("""SELECT PROJECTION_DATE, PROJECTION_TIME, MOVIE, TICKET_PRICE FROM PROJECTION""")
         result = self.__cursor.fetchall()
         projections = []
@@ -189,16 +189,16 @@ class Projection:
             projections.append(_projection)
         return projections
 
-    def __view_projections_admin(self):
+    def __view_projections_admin(self) -> None:
         projections = self.__projections_to_list_admin()
         print(tabulate(projections, headers=["ID", "DATE", "TIME", "HALL ID", "MOVIE",
                                              "TAKEN SEATS", "TICKET PRICE", "TOTAL"]))
 
-    def view_projections(self):
+    def view_projections(self) -> None:
         projections = self.__projections_to_list_user()
         print(tabulate(projections, headers=["№", "DATE", "TIME", "MOVIE", "TICKET PRICE"]))
 
-    def delete_projection(self):
+    def delete_projection(self) -> bool:
         print("----------------DELETE PROJECTION----------------")
         print("To cancel the operation, type 'quit'")
         self.__view_projections_admin()
@@ -219,7 +219,7 @@ class Projection:
         print("Successfully deleted projection")
         return True
 
-    def show_total_revenue(self):
+    def show_total_revenue(self) -> None:
         self.__cursor.execute("""SELECT PROJECTION_DATE, PROJECTION_TIME, MOVIE, TOTAL_REVENUE FROM PROJECTION""")
         result = self.__cursor.fetchall()
         projections = []
@@ -230,7 +230,7 @@ class Projection:
         projections.append(("", "", "", total))
         print(tabulate(projections, headers=["PROJECTION_DATE", "PROJECTION_TIME", "MOVIE", "TOTAL"]))
 
-    def get_movie_details(self):
+    def get_movie_details(self) -> None:
         print("----------------MOVIE DETAILS ----------------")
         projections = self.__projections_to_list_user()
         print("To cancel the operation, type 'quit'")
@@ -248,7 +248,7 @@ class Projection:
         movie = Movie()
         movie.get_movie_details(projections[int(chosen_movie) - 1][3])
 
-    def buy_ticket(self):
+    def buy_ticket(self) -> bool:
         print("----------------BUY TICKET----------------")
         print("To cancel the operation, type 'quit'")
         self.view_projections()
@@ -278,13 +278,13 @@ class Projection:
         self.__conn.commit()
         return True
 
-    def view_movie_details(self):
-        self.view_projections()
+    def view_movie_details(self) -> None:
         reply = ""
         while reply == "":
+            self.view_projections()
             reply = input("Would you like to view details about a movie ? [Y/N]: ")
             if reply == 'Y' or reply == 'y':
-                projection.get_movie_details()
+                self.get_movie_details()
                 reply = ""
                 continue
             if reply == 'N' or reply == 'n':
@@ -293,7 +293,7 @@ class Projection:
                 print("Non-valid reply. Type 'Y/y' or 'N/n")
                 reply = ""
 
-    def view_available_seats(self):
+    def view_available_seats(self) -> bool:
         print("----------------VIEW  AVAILABLE SEATS----------------")
         self.view_projections()
         total_projections = len(self.__projections_to_list_user())

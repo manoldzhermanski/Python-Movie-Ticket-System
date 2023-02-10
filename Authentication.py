@@ -17,7 +17,7 @@ class Authentication:
 
     __cursor = __conn.cursor()
 
-    def create_tables(self):
+    def create_tables(self) -> None:
         self.__cursor.execute("""DROP TABLE "user" CASCADE; """)
         self.__cursor.execute("""DROP TABLE PROJECTION CASCADE; """)
 
@@ -43,7 +43,7 @@ class Authentication:
         self.__conn.commit()
         self.__add_admin()
 
-    def __add_admin(self):
+    def __add_admin(self) -> None:
         pwd = bytes(os.environ['ADMIN_PASSWORD'], "utf-8")
         hashed_pwd = bcrypt.hashpw(pwd, bcrypt.gensalt())
         hashed_pwd = str(hashed_pwd)

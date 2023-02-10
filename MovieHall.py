@@ -13,7 +13,7 @@ class MovieHall:
 
     __cursor = __conn.cursor()
 
-    def string_to_hall(self, string_hall):
+    def string_to_hall(self, string_hall) -> list:
         temp = [string_hall[idx: idx + 20] for idx in range(0, len(string_hall), 20)]
         res = list(map(lambda ele: list(map(int, ele)), temp))
         self.__rows = len(res)
@@ -46,18 +46,18 @@ class MovieHall:
                 seat = ""
         return int(row), int(seat)
 
-    def hall_to_string(self):
+    def hall_to_string(self) -> str:
         string_hall = [[str(ele) for ele in sub] for sub in self.__hall]
         flat_list = [item for sublist in string_hall for item in sublist]
         flat_list = "".join(flat_list)
         return flat_list
 
-    def print_hall(self):
+    def print_hall(self) -> None:
         print("FREE SEATS - 0\n TAKEN SEATS - 1\n")
         for row in self.__hall:
             print(*row)
 
-    def buy_ticket(self):
+    def buy_ticket(self) -> bool:
         print("----------------CHOOSE SEAT----------------")
         print("To cancel the operation, type 'quit'")
         self.print_hall()
@@ -73,7 +73,7 @@ class MovieHall:
             self.__hall[row - 1][seat - 1] = 1
             print("We have now bought this seat for you.")
 
-    def count_free_seats(self):
+    def count_free_seats(self) -> None:
         free_seats = 0
         for row in self.__hall:
             free_seats += row.count(0)

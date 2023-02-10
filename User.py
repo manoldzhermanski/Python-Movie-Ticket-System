@@ -6,17 +6,17 @@ class User:
         self.password = password
         self.is_admin = is_admin
 
-    def get_email(self):
+    def get_email(self) -> str:
         return self.email
 
-    def get_password(self):
+    def get_password(self) -> str:
         return self.password
 
-    def get_first_name(self):
+    def get_first_name(self) -> str:
         return self.first_name
 
-    def get_last_name(self):
+    def get_last_name(self) -> str:
         return self.last_name
 
-    def get_isAdmin(self):
+    def get_isAdmin(self) -> bool:
         return self.is_admin

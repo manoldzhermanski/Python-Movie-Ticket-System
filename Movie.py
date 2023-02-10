@@ -5,14 +5,14 @@ class Movie:
     __base_url = "https://api.themoviedb.org/3/movie/"
     __api_key = "d8e12eff606e3ce0127689cb127f5641"
 
-    def get_now_playing(self):
+    def get_now_playing(self) -> None:
         print("Now Playing: ")
         response = requests.get(f"{self.__base_url}now_playing?api_key={self.__api_key}")
         response = response.json()
         for i in range(len(response['results'])):
             print(f"{i + 1}) {response['results'][i]['title']}")
 
-    def now_playing_list(self):
+    def now_playing_list(self) -> list:
         now_playing_movie_titles = []
         response = requests.get(f"{self.__base_url}now_playing?api_key={self.__api_key}")
         response = response.json()
@@ -21,13 +21,13 @@ class Movie:
         return now_playing_movie_titles
 
     @staticmethod
-    def __get_movie_id(title):
+    def __get_movie_id(title) -> int:
         response = requests.get(
             f"https://api.themoviedb.org/3/search/movie?api_key=d8e12eff606e3ce0127689cb127f5641&query={title}")
         response = response.json()
         return response['results'][0]['id']
 
-    def get_movie_details(self, title):
+    def get_movie_details(self, title) -> None:
         movie_id = self.__get_movie_id(title)
         movie_info = requests.get(f"https://api.themoviedb.org/3/movie/{str(movie_id)}?api_key={self.__api_key}")
         movie_cast = requests.get(f"https://api.themoviedb.org/3/movie/"
