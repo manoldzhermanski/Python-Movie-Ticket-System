@@ -15,6 +15,8 @@ To perform a command, the user types it in the console.
 * APIs: [The Movie Database API](https://developers.themoviedb.org/3/getting-started/introduction)
 * Database: PostgreSQL
 
+## Database tables
+![](../../Pictures/Screenpresso/2023-02-10_15h08_16.png)
 ## Used libraries
 * os
 * re
