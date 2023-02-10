@@ -53,6 +53,7 @@ class MovieHall:
         return flat_list
 
     def print_hall(self):
+        print("FREE SEATS - 0\n TAKEN SEATS - 1\n")
         for row in self.__hall:
             print(*row)
 
@@ -72,15 +73,6 @@ class MovieHall:
             self.__hall[row - 1][seat - 1] = 1
             print("We have now bought this seat for you.")
 
-    def export_hall_info(self, file_path):
-        print("Exporting hall information...")
-        file = open(file_path, 'a')
-        for row in self.__hall:
-            for seat in row:
-                file.write(str(seat) + ",")
-            file.write("\n")
-        print(f"Successfully exported information to {file_path}")
-
     def count_free_seats(self):
         free_seats = 0
         for row in self.__hall:
@@ -89,10 +81,3 @@ class MovieHall:
             print(f"There are {free_seats} free seats available")
         else:
             print("There are no free seats available")
-
-
-if __name__ == '__main__':
-    hall = MovieHall()
-    hall.print_hall()
-    hall.buy_ticket()
-    print(hall.hall_to_string())

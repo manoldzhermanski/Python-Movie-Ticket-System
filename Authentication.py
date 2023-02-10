@@ -20,7 +20,6 @@ class Authentication:
     def create_tables(self):
         self.__cursor.execute("""DROP TABLE "user" CASCADE; """)
         self.__cursor.execute("""DROP TABLE PROJECTION CASCADE; """)
-        self.__cursor.execute("""DROP TABLE PURCHASE_HISTORY CASCADE; """)
 
         self.__cursor.execute("""CREATE TABLE "user"(
                             EMAIL VARCHAR(35) NOT NULL PRIMARY KEY,
@@ -41,13 +40,6 @@ class Authentication:
                        TICKET_PRICE DECIMAL(8, 2) NOT NULL,
                        TOTAL_REVENUE DECIMAL(8, 2));""")
 
-        self.__cursor.execute("""CREATE TABLE PURCHASE_HISTORY(
-                          PURCHASED_AT TIMESTAMP PRIMARY KEY,
-                          PURCHASED_BY VARCHAR(50) REFERENCES "user"(EMAIL),
-                          PROJECTION INT REFERENCES PROJECTION(PROJECTION_ID),
-                          PURCHASED_PLACES VARCHAR,
-                          TOTAL DECIMAL(8,2));"""
-                              )
         self.__conn.commit()
         self.__add_admin()
 

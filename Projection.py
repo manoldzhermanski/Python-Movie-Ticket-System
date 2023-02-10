@@ -317,7 +317,3 @@ class Projection:
         hall.string_to_hall(result[5])
         hall.print_hall()
         return True
-
-if __name__ == '__main__':
-    projection = Projection()
-    projection.view_available_seats()
